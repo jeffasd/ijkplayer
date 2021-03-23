@@ -17,7 +17,7 @@ git checkout -B latest compile_android
 
 cd ios
 ./compile-ffmpeg.sh clean
-./compile-ffmpeg.sh debug
+./compile-ffmpeg.sh all debug
 ```
 
 ### Build Android Debug
@@ -30,7 +30,7 @@ git checkout -B latest compile_android
 
 cd android/contrib
 ./compile-ffmpeg.sh clean
-./compile-ffmpeg.sh debug
+./compile-ffmpeg.sh all debug
 
 # 修改 $ /Users/xxx/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures/Android.mk 下的 LOCAL_CFLAGS := -Wall -Wextra -Werror -> LOCAL_CFLAGS := -Wall -Wextra 否则编译时链接cpu-features.o后报 psabi 错误,原因是cpu-features把警告当错误对待了.
 
