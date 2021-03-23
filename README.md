@@ -9,9 +9,9 @@ Video player based on [ffplay](http://ffmpeg.org)
 
 ### Build iOS Debug
 ```
-git clone https://github.com/Bilibili/ijkplayer.git ijkplayer-ios
+git clone https://github.com/jeffasd/ijkplayer.git ijkplayer-ios
 cd ijkplayer-ios
-git checkout -B latest k0.8.8
+git checkout -B latest compile_android
 
 ./init-ios.sh
 
@@ -22,9 +22,9 @@ cd ios
 
 ### Build Android Debug
 ```
-git clone https://github.com/Bilibili/ijkplayer.git ijkplayer-ios
-cd ijkplayer-ios
-git checkout -B latest k0.8.8
+git clone https://github.com/jeffasd/ijkplayer.git ijkplayer-android
+cd ijkplayer-android
+git checkout -B latest compile_android
 
 ./init-android.sh
 
