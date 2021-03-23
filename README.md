@@ -38,6 +38,7 @@ cd android/contrib
 sed -i "_saved" -E $'s/ \x2dWerror//g' $ANDROID_NDK/sources/android/cpufeatures/Android.mk
 
 cd ..
+./compile-ijk.sh clean
 ./compile-ijk.sh all
 ```
 
