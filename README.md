@@ -7,6 +7,37 @@
 
 Video player based on [ffplay](http://ffmpeg.org)
 
+### Build iOS Debug
+```
+git clone https://github.com/Bilibili/ijkplayer.git ijkplayer-ios
+cd ijkplayer-ios
+git checkout -B latest k0.8.8
+
+./init-ios.sh
+
+cd ios
+./compile-ffmpeg.sh clean
+./compile-ffmpeg.sh debug
+```
+
+### Build Android Debug
+```
+git clone https://github.com/Bilibili/ijkplayer.git ijkplayer-ios
+cd ijkplayer-ios
+git checkout -B latest k0.8.8
+
+./init-android.sh
+
+cd android/contrib
+./compile-ffmpeg.sh clean
+./compile-ffmpeg.sh debug
+
+# 修改 $ /Users/xxx/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures/Android.mk 下的 LOCAL_CFLAGS := -Wall -Wextra -Werror -> LOCAL_CFLAGS := -Wall -Wextra 否则编译时链接cpu-features.o后报 psabi 错误,原因是cpu-features把警告当错误对待了.
+
+cd ..
+./compile-ijk.sh all
+```
+
 ### Download
 
 - Android:
@@ -146,8 +177,7 @@ cd android/contrib
 ./compile-ffmpeg.sh all
 
 cd ..
-./compile-ijk.sh all # 执行前需要修改 $ /Users/xxx/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures/Android.mk
-// LOCAL_CFLAGS := -Wall -Wextra -Werror -> LOCAL_CFLAGS := -Wall -Wextra 否则编译时链接cpu-features.o后报 psabi 错误,原因是cpu-features把警告当错误对待了.
+./compile-ijk.sh all
 
 # Android Studio:
 #     Open an existing Android Studio project
