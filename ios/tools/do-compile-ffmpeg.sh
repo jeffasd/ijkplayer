@@ -250,7 +250,7 @@ echo "\n--------------------"
 echo "[*] compile ffmpeg"
 echo "--------------------"
 cp config.* $FF_BUILD_PREFIX
-make -j3 $FF_GASPP_EXPORT
+make -j12 $FF_GASPP_EXPORT
 make install
 mkdir -p $FF_BUILD_PREFIX/include/libffmpeg
 cp -f config.h $FF_BUILD_PREFIX/include/libffmpeg/config.h
