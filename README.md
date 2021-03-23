@@ -40,6 +40,8 @@ sed -i "_saved" -E $'s/ \x2dWerror//g' $ANDROID_NDK/sources/android/cpufeatures/
 cd ..
 ./compile-ijk.sh clean
 ./compile-ijk.sh all
+
+open -a Android\ Studio ./ijkplayer/
 ```
 
 ### Download
