@@ -34,6 +34,9 @@ cd android/contrib
 
 # 修改 $ /Users/xxx/Library/Android/sdk/ndk-bundle/sources/android/cpufeatures/Android.mk 下的 LOCAL_CFLAGS := -Wall -Wextra -Werror -> LOCAL_CFLAGS := -Wall -Wextra 否则编译时链接cpu-features.o后报 psabi 错误,原因是cpu-features把警告当错误对待了.
 
+# 替换cpufeatures/Android.mk下的LOCAL_CFLAGS := -Wall -Wextra -Werror -> LOCAL_CFLAGS := -Wall -Wextra
+sed -i "_saved" -E $'s/ \x2dWerror//g' $ANDROID_NDK/sources/android/cpufeatures/Android.mk
+
 cd ..
 ./compile-ijk.sh all
 ```
