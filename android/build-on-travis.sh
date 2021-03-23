@@ -27,7 +27,8 @@ fi
 
 REQUEST_TARGET=$1
 ACT_ABI_32="armv5 armv7a x86"
-ACT_ABI_64="armv5 armv7a arm64 x86 x86_64"
+#ACT_ABI_64="armv5 armv7a arm64 x86 x86_64"
+ACT_ABI_64="arm64"
 ACT_ABI_ALL=$ACT_ABI_64
 
 

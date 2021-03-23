@@ -60,6 +60,7 @@ FF_DEP_LIBS=
 
 FF_MODULE_DIRS="compat libavcodec libavfilter libavformat libavutil libswresample libswscale"
 FF_ASSEMBLER_SUB_DIRS=
+FF_CONFIGURE_COMMEND=
 
 
 #--------------------
@@ -214,7 +215,8 @@ echo "[*] check ffmpeg env"
 echo "--------------------"
 export PATH=$FF_TOOLCHAIN_PATH/bin/:$PATH
 #export CC="ccache ${FF_CROSS_PREFIX}-gcc"
-export CC="${FF_CROSS_PREFIX}-gcc"
+# export CC="${FF_CROSS_PREFIX}-gcc"
+export CC="${FF_CROSS_PREFIX}-clang"
 export LD=${FF_CROSS_PREFIX}-ld
 export AR=${FF_CROSS_PREFIX}-ar
 export STRIP=${FF_CROSS_PREFIX}-strip
@@ -277,6 +279,16 @@ else
     # Optimization options (experts only):
     FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-asm"
     FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-inline-asm"
+    
+    if [ "$FF_ARCH" = "x86_64" ]; then
+        # error: libavcodec/h264_cabac.o: requires dynamic R_X86_64_PC32 reloc against 'ff_h264_cabac_tables'
+        # 在编译ffmpeg时加入--disable-asm选项可以修正这个问题，使ff_h264_cabac_tables可重定位。
+        # https://my.oschina.net/u/145591/blog/792486
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-asm"
+    elif [ "$FF_ARCH" = "armv7a" ]; then
+        # error: unexpected token in argument list CO_RY .dn d0.s16[0]
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-asm"
+    fi
 fi
 
 case "$FF_BUILD_OPT" in
@@ -301,7 +313,16 @@ cd $FF_SOURCE
 if [ -f "./config.h" ]; then
     echo 'reuse configure'
 else
+    echo "pwd:" `pwd`
     which $CC
+    
+    echo "\n"
+    FF_CONFIGURE_COMMEND="$FF_CFG_FLAGS \
+        --extra-cflags=$FF_CFLAGS $FF_EXTRA_CFLAGS \
+        --extra-ldflags=$FF_DEP_LIBS $FF_EXTRA_LDFLAGS"
+    echo "FF_CONFIGURE_COMMEND: $FF_CONFIGURE_COMMEND"
+    echo "\n"
+    
     ./configure $FF_CFG_FLAGS \
         --extra-cflags="$FF_CFLAGS $FF_EXTRA_CFLAGS" \
         --extra-ldflags="$FF_DEP_LIBS $FF_EXTRA_LDFLAGS"
