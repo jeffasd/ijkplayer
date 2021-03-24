@@ -24,7 +24,7 @@ cd ios
 ```
 git clone https://github.com/jeffasd/ijkplayer.git ijkplayer-android
 cd ijkplayer-android
-git checkout -B latest compile_android
+git checkout -B latest compile_android_debug
 
 ./init-android.sh
 
