@@ -18,6 +18,8 @@ git checkout -B latest compile_android
 cd ios
 ./compile-ffmpeg.sh clean
 ./compile-ffmpeg.sh all debug
+
+open -a Xcode IJKMediaDemo/IJKMediaDemo.xcodeproj
 ```
 
 ### Build Android Debug
