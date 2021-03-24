@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "ijkurlmap.h"
+#include "ijkplayer/ijkavutil/ijkurlmap.h"
 
 #define CONFIG_MAX_LINE 1024
 

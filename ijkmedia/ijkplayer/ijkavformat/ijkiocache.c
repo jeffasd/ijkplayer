@@ -40,7 +40,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "ijkurlmap.h"
+#include "ijkplayer/ijkavutil/ijkurlmap.h"
 
 #define DEFAULT_CACHE_MAX_CAPACITY            (512 * 1024 * 1024)
 #define DEFAULT_CACHE_FILE_FORWARDS_CAPACITY  (8 * 1024 * 1024)
