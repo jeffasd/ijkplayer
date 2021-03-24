@@ -38,6 +38,17 @@ cd android/contrib
 sed -i "_saved" -E $'s/ \x2dWerror//g' $ANDROID_NDK/sources/android/cpufeatures/Android.mk
 
 cd ..
+调试ijkplayer 目前只能用gcc,使用clang能编译成功，但是无法跳入ijkplayer的JNI代码内, 使能gcc调试需要 android/ijkplayer/ijkplayer-arm64/src/main/jni/Application.mk下 NDK_TOOLCHAIN_VERSION=4.9 NDK_TOOLCHAIN_VERSION=gcc,
+在clang的配置为注释NDK_TOOLCHAIN_VERSION,NDK_TOOLCHAIN_VERSION=clang，ndk的toolchains目录下并没有clang工具,所以clang下的指定,没法调试.使用android-ndk-r14b版本的ndk.
+curl -v -o android-ndk-r14b.zip https://dl.google.com/android/repository/android-ndk-r14b-darwin-x86_64.zip?hl=zh_cn
+unzip -n android-ndk-r14b.zip -d ./android-ndk-r14b
+cp -r -v ./android-ndk-r14b /Users/xxx/Library/Android/sdk/
+vim ~/.bash_profile
+添加
+    export PATH=${PATH}:/Users/xxx/Library/Android/sdk/android-ndk-r14b
+    export ANDROID_NDK=/Users/xxx/Library/Android/sdk/android-ndk-r14b
+source ~/.bash_profile
+env
 ./compile-ijk.sh clean
 ./compile-ijk.sh all
 

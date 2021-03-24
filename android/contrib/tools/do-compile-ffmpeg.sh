@@ -215,13 +215,20 @@ echo "[*] check ffmpeg env"
 echo "--------------------"
 export PATH=$FF_TOOLCHAIN_PATH/bin/:$PATH
 #export CC="ccache ${FF_CROSS_PREFIX}-gcc"
-# export CC="${FF_CROSS_PREFIX}-gcc"
+#export CC="${FF_CROSS_PREFIX}-gcc"
 export CC="${FF_CROSS_PREFIX}-clang"
 export LD=${FF_CROSS_PREFIX}-ld
 export AR=${FF_CROSS_PREFIX}-ar
 export STRIP=${FF_CROSS_PREFIX}-strip
 
-FF_CFLAGS="-O3 -Wall -pipe \
+#FF_CFLAGS="-O3 -Wall -pipe \
+#    -std=c99 \
+#    -ffast-math \
+#    -fstrict-aliasing -Werror=strict-aliasing \
+#    -Wno-psabi -Wa,--noexecstack \
+#    -DANDROID -DNDEBUG"
+
+FF_CFLAGS="-Wall -pipe \
     -std=c99 \
     -ffast-math \
     -fstrict-aliasing -Werror=strict-aliasing \

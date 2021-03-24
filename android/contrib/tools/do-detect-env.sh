@@ -69,16 +69,16 @@ case "$IJK_NDK_REL" in
         echo "IJK_NDK_REL=$IJK_NDK_REL"
         case "$IJK_NDK_REL" in
             19*|20*|21*|22*)
-                if test -d ${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.9
+                if test -d ${ANDROID_NDK}/toolchains/aarch64-linux-android-4.9
                 then
-                    echo "NDKr$IJK_NDK_REL detected"
+                    echo "NDK$IJK_NDK_REL detected"
                 else
-                    echo "You need the NDKr10e or later"
+                    echo "You need the NDKr19c or later"
                     exit 1
                 fi
             ;;
             *)
-                echo "You need the NDKr10e or later"
+                echo "You need the NDKr19c or later"
                 exit 1
             ;;
         esac

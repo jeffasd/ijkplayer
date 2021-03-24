@@ -35,6 +35,7 @@ local.properties
 .idea
 .gradle
 build/
+android/ijkplayer/ijkplayer-arm64/.externalNativeBuild/
 
 # Xcode
 xcuserdata

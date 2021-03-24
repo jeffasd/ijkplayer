@@ -21,6 +21,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=c99
+LOCAL_CPPFLAGS += -std=c++11
 LOCAL_LDLIBS += -llog -landroid -lOpenSLES -lEGL -lGLESv2
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
@@ -72,8 +73,10 @@ LOCAL_SRC_FILES += android/ijksdl_vout_android_nativewindow.c
 LOCAL_SRC_FILES += android/ijksdl_vout_android_surface.c
 LOCAL_SRC_FILES += android/ijksdl_vout_overlay_android_mediacodec.c
 
-LOCAL_SHARED_LIBRARIES := ijkffmpeg
-LOCAL_STATIC_LIBRARIES := cpufeatures yuv_static ijkj4a
+# LOCAL_SHARED_LIBRARIES := ijkffmpeg
+# LOCAL_STATIC_LIBRARIES := cpufeatures yuv_static ijkj4a
+
+LOCAL_STATIC_LIBRARIES := cpufeatures yuv_static ijkj4a avformat avcodec swscale swresample avfilter avutil
 
 LOCAL_MODULE := ijksdl
 include $(BUILD_SHARED_LIBRARY)
