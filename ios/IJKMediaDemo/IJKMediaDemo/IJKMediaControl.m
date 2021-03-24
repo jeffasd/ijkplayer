@@ -35,6 +35,7 @@
 - (void)awakeFromNib
 {
     [self refreshMediaControl];
+    _topPanel.hidden = YES;
 }
 
 - (void)showNoFade

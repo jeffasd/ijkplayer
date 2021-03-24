@@ -22,6 +22,7 @@
 #import "IJKMoviePlayerViewController.h"
 #import "IJKDemoLocalFolderViewController.h"
 #import "IJKDemoSampleViewController.h"
+#import "IJKPlayerVideoCacheTools.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 
 @interface IJKDemoMainViewController () <UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
@@ -42,9 +43,10 @@
     self.tableViewCellTitles = @[
                                  @"Local Folder",
                                  @"Movie Picker",
-                                 @"Input URL",
+                                 @"Test Video Cache Bug Input URL",
                                  @"Scan QRCode",
                                  @"Online Samples",
+                                 @"Clean All Video Cache",
                                  ];
     
     NSURL *documentsUrl = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
@@ -150,6 +152,10 @@
 
                 case 4:
                     [self.navigationController pushViewController:[[IJKDemoSampleViewController alloc] init] animated:YES];
+                    break;
+                    
+                case 5:
+                    [IJKPlayerVideoCacheTools CleanAllIJKPlayerVideoCache];
                     break;
 
                 default:

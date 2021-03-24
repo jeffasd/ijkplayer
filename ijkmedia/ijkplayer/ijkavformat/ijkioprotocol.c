@@ -29,6 +29,9 @@ extern IjkURLProtocol ijkio_androidio_protocol;
 extern IjkURLProtocol ijkio_cache_protocol;
 extern IjkURLProtocol ijkio_httphook_protocol;
 
+pthread_mutex_t    write_cache_file_or_map_mutex;
+void *ijk_url_fd_index_map;
+
 int ijkio_alloc_url(IjkURLContext **ph, const char *url) {
     if (!ph) {
         return -1;

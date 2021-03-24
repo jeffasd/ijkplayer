@@ -19,6 +19,7 @@
 #import "IJKMediaControl.h"
 #import "IJKCommon.h"
 #import "IJKDemoHistory.h"
+#import "IJKTestCacheBugVideoViewController.h"
 
 @implementation IJKVideoViewController
 
@@ -34,6 +35,16 @@
     [[IJKDemoHistory instance] add:historyItem];
     
     [viewController presentViewController:[[IJKVideoViewController alloc] initWithURL:url] animated:YES completion:completion];
+}
+
++ (void)presentFromViewControllerTestVideoCacheBug:(UIViewController *)viewController withTitle:(NSString *)title URL:(NSURL *)url completion:(void (^)())completion {
+    IJKDemoHistoryItem *historyItem = [[IJKDemoHistoryItem alloc] init];
+    
+    historyItem.title = title;
+    historyItem.url = url;
+    [[IJKDemoHistory instance] add:historyItem];
+    
+    [viewController presentViewController:[[IJKTestCacheBugVideoViewController alloc] initWithURL:url] animated:YES completion:completion];
 }
 
 - (instancetype)initWithManifest: (NSString*)manifest_string {

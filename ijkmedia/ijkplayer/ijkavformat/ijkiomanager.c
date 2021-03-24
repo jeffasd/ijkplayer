@@ -31,6 +31,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "ijkurlmap.h"
+
 #define CONFIG_MAX_LINE 1024
 
 static int ijkio_manager_alloc(IjkIOManagerContext **ph, void *opaque)
@@ -110,15 +112,15 @@ static int ijkio_manager_save_tree_to_file(void *parm, int64_t key, void *elem)
         fwrite(string, strlen(string), 1, fp);
 
         memset(string, 0, CONFIG_MAX_LINE);
-        snprintf(string, CONFIG_MAX_LINE, "tree_physical_init_pos:%lld\n", info->physical_init_pos);
+        snprintf(string, CONFIG_MAX_LINE, "tree_physical_init_pos:%lld\n", info->physical_init_pos); /// 本地缓存的开始位置
         fwrite(string, strlen(string), 1, fp);
 
         memset(string, 0, CONFIG_MAX_LINE);
-        snprintf(string, CONFIG_MAX_LINE, "tree_physical_size:%lld\n", info->physical_size);
+        snprintf(string, CONFIG_MAX_LINE, "tree_physical_size:%lld\n", info->physical_size); /// 本地缓存的大小
         fwrite(string, strlen(string), 1, fp);
 
         memset(string, 0, CONFIG_MAX_LINE);
-        snprintf(string, CONFIG_MAX_LINE, "tree_file_size:%lld\n", info->file_size);
+        snprintf(string, CONFIG_MAX_LINE, "tree_file_size:%lld\n", info->file_size); /// 服务端文件的大小.
         fwrite(string, strlen(string), 1, fp);
 
         memset(string, 0, CONFIG_MAX_LINE);
@@ -171,9 +173,21 @@ void ijkio_manager_destroyp(IjkIOManagerContext **ph)
 {
     if (!ph || !*ph)
         return;
+    
+    pthread_mutex_lock(&write_cache_file_or_map_mutex);
+    IjkIOManagerContext *h = *ph;
+    IjkURLContext *inner = ijk_map_get(h->ijk_ctx_map, (int64_t)(intptr_t)h->cur_ffmpeg_ctx);
+    if (inner) {
+        int cur_url_file_fd_index = ijk_url_map_get(ijk_url_fd_index_map, inner->ijkio_app_ctx->cache_file_path);
+        if (cur_url_file_fd_index == inner->ijkio_app_ctx->cur_file_fd_index) {
+            h->auto_save_map = 1;
+        }
+    }
 
     ijkio_manager_destroy(*ph);
     *ph = NULL;
+    
+    pthread_mutex_unlock(&write_cache_file_or_map_mutex);
 }
 
 int ijkio_manager_set_callback(IjkIOManagerContext *h, void *callback) {
@@ -399,6 +413,7 @@ int ijkio_manager_io_open(IjkIOManagerContext *h, const char *url, int flags, Ij
         if (t) {
             h->auto_save_map = (int)strtol(t->value, NULL, 10);
         }
+        h->auto_save_map = 0; /// 关闭自动写map文件的逻辑,改为播放器释放时写入map文件. 防止多个多线在异步map文件,导致map文件和file文件不能一一对应,导致缓存出错.
 
         if (h->ijkio_app_ctx->cache_info_map && !ijk_map_size(h->ijkio_app_ctx->cache_info_map)) {
             t = ijk_av_dict_get(*options, "parse_cache_map", NULL, IJK_AV_DICT_MATCH_CASE);
@@ -495,12 +510,21 @@ int ijkio_manager_io_close(IjkIOManagerContext *h) {
 
     IjkURLContext *inner = ijk_map_get(h->ijk_ctx_map, (int64_t)(intptr_t)h->cur_ffmpeg_ctx);
     if (inner) {
+        
+        pthread_mutex_lock(&write_cache_file_or_map_mutex);
+        int cur_url_file_fd_index = ijk_url_map_get(ijk_url_fd_index_map, inner->ijkio_app_ctx->cache_file_path);
+        if (cur_url_file_fd_index == inner->ijkio_app_ctx->cur_file_fd_index) {
+            h->auto_save_map = 1;
+        }
+        
         if (inner->prot && inner->prot->url_close) {
             ret = inner->prot->url_close(inner);
         }
         ijk_map_remove(h->ijk_ctx_map, (int64_t)(intptr_t)h->cur_ffmpeg_ctx);
         ijk_av_freep(&inner->priv_data);
         ijk_av_freep(&inner);
+        
+        pthread_mutex_unlock(&write_cache_file_or_map_mutex);
     }
 
     return ret;

@@ -170,6 +170,10 @@
 		54CF8A521E15287D00309DD5 /* ijktree.h in Headers */ = {isa = PBXBuildFile; fileRef = 54CF8A461E15287D00309DD5 /* ijktree.h */; };
 		54CF8A531E15287D00309DD5 /* ijkutils.c in Sources */ = {isa = PBXBuildFile; fileRef = 54CF8A471E15287D00309DD5 /* ijkutils.c */; };
 		54CF8A541E15287D00309DD5 /* ijkutils.h in Headers */ = {isa = PBXBuildFile; fileRef = 54CF8A481E15287D00309DD5 /* ijkutils.h */; };
+		6EFB64B3260B37C500532EAB /* ijkurlmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB64B1260B37C400532EAB /* ijkurlmap.cpp */; };
+		6EFB64B4260B37C500532EAB /* ijkurlmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB64B1260B37C400532EAB /* ijkurlmap.cpp */; };
+		6EFB64B5260B37C500532EAB /* ijkurlmap.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EFB64B2260B37C400532EAB /* ijkurlmap.h */; };
+		6EFB64B6260B37C500532EAB /* ijkurlmap.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EFB64B2260B37C400532EAB /* ijkurlmap.h */; };
 		B417F8DE24F7C3B500D159BB /* cJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = B417F8DB24F7C3B400D159BB /* cJSON.h */; };
 		B417F8E224F7C56C00D159BB /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = B417F8E124F7C56C00D159BB /* cJSON.c */; };
 		B4449BD6250095700074CEDC /* ijklas.h in Headers */ = {isa = PBXBuildFile; fileRef = B4449BD4250095700074CEDC /* ijklas.h */; };
@@ -326,6 +330,8 @@
 		54CF8A461E15287D00309DD5 /* ijktree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ijktree.h; sourceTree = "<group>"; };
 		54CF8A471E15287D00309DD5 /* ijkutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ijkutils.c; sourceTree = "<group>"; };
 		54CF8A481E15287D00309DD5 /* ijkutils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ijkutils.h; sourceTree = "<group>"; };
+		6EFB64B1260B37C400532EAB /* ijkurlmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ijkurlmap.cpp; sourceTree = "<group>"; };
+		6EFB64B2260B37C400532EAB /* ijkurlmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ijkurlmap.h; sourceTree = "<group>"; };
 		B417F8DB24F7C3B400D159BB /* cJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cJSON.h; sourceTree = "<group>"; };
 		B417F8E124F7C56C00D159BB /* cJSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cJSON.c; sourceTree = "<group>"; };
 		B4449BD4250095700074CEDC /* ijklas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ijklas.h; sourceTree = "<group>"; };
@@ -871,6 +877,8 @@
 				54CF8A461E15287D00309DD5 /* ijktree.h */,
 				54CF8A471E15287D00309DD5 /* ijkutils.c */,
 				54CF8A481E15287D00309DD5 /* ijkutils.h */,
+				6EFB64B1260B37C400532EAB /* ijkurlmap.cpp */,
+				6EFB64B2260B37C400532EAB /* ijkurlmap.h */,
 				E69BE54F1B93FED300AFBA3F /* opt.h */,
 			);
 			path = ijkavutil;
@@ -990,6 +998,7 @@
 				5450B02C1E63EA4300568494 /* IJKNotificationManager.h in Headers */,
 				5450B02D1E63EA4300568494 /* ijkthreadpool.h in Headers */,
 				5450B02E1E63EA4300568494 /* ijkiomanager.h in Headers */,
+				6EFB64B6260B37C500532EAB /* ijkurlmap.h in Headers */,
 				33BA6FC0254BC4D9004EB9F2 /* ijklas.h in Headers */,
 				5450B02F1E63EA4300568494 /* ijkstl.h in Headers */,
 				4D32BC821F906E3B00CE9F03 /* IJKSDLGLViewProtocol.h in Headers */,
@@ -1032,6 +1041,7 @@
 				E69808A01C7EB2040048A46C /* IJKNotificationManager.h in Headers */,
 				B417F8DE24F7C3B500D159BB /* cJSON.h in Headers */,
 				54CF8A501E15287D00309DD5 /* ijkthreadpool.h in Headers */,
+				6EFB64B5260B37C500532EAB /* ijkurlmap.h in Headers */,
 				54CF8A391E1526F800309DD5 /* ijkiomanager.h in Headers */,
 				54CF8A4E1E15287D00309DD5 /* ijkstl.h in Headers */,
 				4D32BC811F906E3A00CE9F03 /* IJKSDLGLViewProtocol.h in Headers */,
@@ -1211,6 +1221,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5450AFC41E63EA4300568494 /* IJKKVOController.m in Sources */,
+				6EFB64B4260B37C500532EAB /* ijkurlmap.cpp in Sources */,
 				5450AFC51E63EA4300568494 /* ijksdl_vout.c in Sources */,
 				5450AFC61E63EA4300568494 /* yuv444p10le.fsh.c in Sources */,
 				5450AFC71E63EA4300568494 /* allformats.c in Sources */,
@@ -1304,6 +1315,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E654EAA71B6B283700B0F2D0 /* IJKKVOController.m in Sources */,
+				6EFB64B3260B37C500532EAB /* ijkurlmap.cpp in Sources */,
 				E654EAC71B6B287E00B0F2D0 /* ijksdl_vout.c in Sources */,
 				E6C459951C7030B6004831EC /* yuv444p10le.fsh.c in Sources */,
 				E69BE5511B93FED300AFBA3F /* allformats.c in Sources */,

@@ -35,9 +35,9 @@ typedef struct IjkAVIOInterruptCB {
 
 typedef struct IjkCacheTreeInfo {
     struct IjkAVTreeNode *root;
-    int64_t physical_init_pos;
-    int64_t physical_size;
-    int64_t file_size;
+    int64_t physical_init_pos; /// 本地缓存起点.
+    int64_t physical_size; /// 本地缓存的大小
+    int64_t file_size; /// 文件服务端总大小
 } IjkCacheTreeInfo;
 
 #define FFDIFFSIGN(x,y) (((x)>(y)) - ((x)<(y)))

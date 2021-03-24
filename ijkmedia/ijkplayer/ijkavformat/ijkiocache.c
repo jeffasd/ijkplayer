@@ -37,6 +37,11 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "ijkurlmap.h"
+
 #define DEFAULT_CACHE_MAX_CAPACITY            (512 * 1024 * 1024)
 #define DEFAULT_CACHE_FILE_FORWARDS_CAPACITY  (8 * 1024 * 1024)
 #   ifndef O_BINARY
@@ -47,11 +52,15 @@
 typedef struct IjkIOCacheContext {
     char *cache_file_path;
     int fd;
-    IjkCacheTreeInfo *tree_info;
-    int64_t logical_size;
+    IjkCacheTreeInfo *tree_info;    /// 缓存信息的信息,二叉树.
+    int64_t logical_size;           /// 服务端的文件总大小
+    
+    /// 本地对应服务端的文件偏移 读出的网络数据的偏移量 播放器需要0-1000的数据，此处的数据为从缓存和网络读出的数据的偏移量. 非累加值.
     int64_t read_logical_pos;
-    int64_t read_inner_pos;
+    int64_t read_inner_pos;         /// inner层既http层读出的偏移量 累加值
     int64_t file_logical_pos;
+    
+    /// 本地磁盘文件的偏移量，对数据时seek文件到读的地方，将此值改为读取的偏移量, 写入时发现此值和last_physical_pos值不同说明，发生了read操作，并且read操作修改了文件指针的位置，此情况下写入时再将文件指针seek会本来的写入文件位置处.
     int64_t cache_physical_pos;
     int64_t file_inner_pos;
     int64_t file_logical_end;
@@ -72,7 +81,7 @@ typedef struct IjkIOCacheContext {
 
     int cur_file_no;
     void *cache_info_map;
-    int64_t *last_physical_pos;
+    int64_t *last_physical_pos;     /// 本地缓存文件的总偏移量 既本地缓存文件的大小
     int64_t *cache_count_bytes;
 
     pthread_cond_t     cond_wakeup_main;
@@ -92,7 +101,19 @@ typedef struct IjkIOCacheContext {
     char inner_url[4096];
     int inner_flags;
     int only_read_file;
+    
+    int cur_file_fd_index;
+    
 } IjkIOCacheContext;
+
+static void init_write_cache_file_or_map_mutex() {
+    static int init = 0;
+    if (init == 0) {
+        ijk_url_fd_index_map = ijk_url_map_create();
+        pthread_mutex_init(&write_cache_file_or_map_mutex, NULL);
+        init = 1;
+    }
+}
 
 static int cmp(const void *key, const void *node)
 {
@@ -534,6 +555,8 @@ static void ijkio_cache_task(void *h, void *r) {
 }
 
 static int ijkio_cache_open(IjkURLContext *h, const char *url, int flags, IjkAVDictionary **options) {
+    init_write_cache_file_or_map_mutex();
+    
     IjkIOCacheContext *c= h->priv_data;
     int ret = 0;
     int64_t cur_exist_file_size = 0;
@@ -596,6 +619,7 @@ static int ijkio_cache_open(IjkURLContext *h, const char *url, int flags, IjkAVD
         return -1;
     }
 
+    pthread_mutex_lock(&write_cache_file_or_map_mutex);
     if (!c->cache_file_close) {
         do {
             if (c->ijkio_app_ctx->fd >= 0) {
@@ -649,6 +673,13 @@ static int ijkio_cache_open(IjkURLContext *h, const char *url, int flags, IjkAVD
             }
         } while(0);
     }
+    
+    int cur_url_file_fd_index = ijk_url_map_get(ijk_url_fd_index_map, c->cache_file_path);
+    cur_url_file_fd_index++;
+    ijk_url_map_put(ijk_url_fd_index_map, c->cache_file_path, cur_url_file_fd_index);
+    c->cur_file_fd_index = cur_url_file_fd_index;
+    h->ijkio_app_ctx->cur_file_fd_index = cur_url_file_fd_index;
+    pthread_mutex_unlock(&write_cache_file_or_map_mutex);
 
     ret = ijkio_alloc_url(&(c->inner), url);
     if (c->inner && !ret) {
@@ -785,7 +816,10 @@ static int64_t sync_add_entry(IjkURLContext *h, const unsigned char *buf, int si
     struct IjkAVTreeNode *node = NULL;
     int64_t free_space = 0;
 
+    /// 由于读数据时需要从缓存中读数据时会将文件指针seek到需要读取的偏移量处,但是写入数据时需要将文件指针再seek到本文件的本来的位置处.
+    /// 对数据时seek文件到读的地方，将此值改为读取的偏移量, 写入时发现此值和last_physical_pos值不同说明，发生了read操作，并且read操作修改了文件指针的位置，此情况下写入时再将文件指针seek会本来的写入文件位置处.
     if (*c->last_physical_pos != c->cache_physical_pos) {
+        /// 不一致表明之前发生了读操作
         pos = lseek(c->fd, *c->last_physical_pos, SEEK_SET);
         if (pos < 0) {
             return FILE_RW_ERROR;
@@ -810,6 +844,13 @@ static int64_t sync_add_entry(IjkURLContext *h, const unsigned char *buf, int si
     if (ret < 0) {
         return FILE_RW_ERROR;
     }
+    
+#if DEBUG
+    struct stat fileStatus = {0};
+    fstat(c->fd, &fileStatus);
+    off_t fileSize = fileStatus.st_size;
+    av_log(NULL, AV_LOG_DEBUG, "==>IjkIOCacheContext %p, fd %d size %d ret %lld fileSize %lld\n", c, c->fd, size, ret, fileSize);
+#endif
 
     c->cache_physical_pos       += ret;
     *c->last_physical_pos       += ret;
@@ -874,15 +915,21 @@ static int ijkio_cache_sync_read(IjkURLContext *h, unsigned char *buf, int size)
         entry = next[0];
 
     if (entry) {
+        /// in_block_pos 本地对应服务端文件的偏移量read_logical_pos - 本节点的对应服务端的文件节点. 本地已经存在的文件大小
+        /// 要读取的数据的起点和本节点的起点的差值
         int64_t in_block_pos = c->read_logical_pos - entry->logical_pos;
+        /// 要读取的数据在本块内
         if (in_block_pos < entry->size && entry->logical_pos <= c->read_logical_pos) {
+            ///  数据在缓存的真实偏移值
             int64_t physical_target = entry->physical_pos + in_block_pos;
+            /// 当前磁盘数据的偏移值和要读取的偏移值 不同将文件指针seek到要读取的位置处,再write数据时,要将文件指针再seek到cache_physical_pos处
             if (c->cache_physical_pos != physical_target) {
                 ret = lseek(c->fd, physical_target, SEEK_SET);
             } else {
                 ret = c->cache_physical_pos;
             }
 
+            /// 读数据时设置 cache_physical_pos 指向当前需要读取的文件位置处.
             if (ret >= 0) {
                 c->cache_physical_pos = ret;
                 to_copy = (int)FFMIN(to_read, entry->size - in_block_pos);
@@ -912,11 +959,13 @@ static int ijkio_cache_sync_read(IjkURLContext *h, unsigned char *buf, int size)
         }
     }
 
+    /// 已经读出的数据大于服务端文件的总大小 结束.不需要再读.
     if (c->read_logical_pos >= c->logical_size) {
         c->io_eof_reached = 1;
         return 0;
     }
 
+    /// inner层http层读出的偏移量和已经从服务端读出的偏移量不一致，inner做seek.
     if (c->async_open > 0) {
         ret = ijkio_cache_io_open(h, c->inner_url, c->inner_flags, &c->inner_options);
         if (ret != 0) {
@@ -934,6 +983,12 @@ static int ijkio_cache_sync_read(IjkURLContext *h, unsigned char *buf, int size)
     }
 
     next_entry = next[1];
+    /// 如果本节点起点大于从服务器读取的偏移量 表明当前的节点在读取的服务端数据后面，有可能再读取一部分本地就有数据了
+    /// 如read_logical_pos为1310000 再读取153个字节就可以使用本地缓存了,因此取两者差值和要读取的数据的最小值,
+    /// 播放器需要3000字节，返回数据不够，播放器会从收到的数据后再次请求的.
+    /// entry_logical_pos:1310153
+    /// entry_physical_pos:710955
+    /// entry_size:1387968
     if (next_entry && next_entry->logical_pos > c->read_logical_pos) {
         to_copy = (int)FFMIN(to_read, next_entry->logical_pos - c->read_logical_pos);
     } else {
@@ -968,11 +1023,32 @@ static int ijkio_cache_read(IjkURLContext *h, unsigned char *buf, int size) {
     }
 
     if (!c->cache_file_forwards_capacity) {
+        
+        pthread_mutex_lock(&write_cache_file_or_map_mutex);
+        int cur_url_file_fd_index = ijk_url_map_get(ijk_url_fd_index_map, c->cache_file_path);
+        if (cur_url_file_fd_index != c->cur_file_fd_index) {
+            if (c->cache_file_close == 0) {
+                c->cache_file_close = 1;
+                av_log(NULL, AV_LOG_ERROR, "%s cache file is bad, will try recreate\n", __func__);
+                ijk_map_traversal_handle(c->cache_info_map, NULL, tree_destroy);
+                ijk_map_clear(c->cache_info_map);
+                c->tree_info             = NULL;
+                *c->last_physical_pos    = 0;
+                c->cache_physical_pos    = 0;
+                c->io_eof_reached        = 0;
+            }
+            pthread_mutex_unlock(&write_cache_file_or_map_mutex);
+            return wrapped_url_read(h, dest, to_read);
+        }
+        
         ret = ijkio_cache_sync_read(h, buf, size);
         if (ret >= 0) {
             c->read_logical_pos += ret;
         }
         call_inject_statistic(h);
+        
+        pthread_mutex_unlock(&write_cache_file_or_map_mutex);
+        
         return (int)ret;
     }
 
@@ -1047,9 +1123,14 @@ static int64_t ijkio_cache_seek(IjkURLContext *h, int64_t pos, int whence) {
     if (c->cache_file_close) {
         return c->inner->prot->url_seek(c->inner, new_logical_pos, SEEK_SET);
     }
+    
+    pthread_mutex_lock(&write_cache_file_or_map_mutex);
 
     if (!c->cache_file_forwards_capacity) {
         c->read_logical_pos = new_logical_pos;
+        
+        pthread_mutex_unlock(&write_cache_file_or_map_mutex);
+        
         return new_logical_pos;
     }
 
