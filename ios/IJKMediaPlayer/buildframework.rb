@@ -19,6 +19,14 @@ schemes = ['IJKMediaFramework']
 
 puts schemes
 
+if File.directory?("build") then
+    FileUtils.rm_r "./build"
+end
+
+if File.directory?("Frameworks") then
+    FileUtils.rm_r "./Frameworks"
+end
+
 def getsdk(*args)
 	ret = []
 	args.each do |m|
@@ -27,8 +35,8 @@ def getsdk(*args)
 	ret
 end
 
-#sdks = getsdk 'iphoneos', 'iphonesimulator'
-sdks = getsdk 'iphonesimulator'
+sdks = getsdk 'iphoneos', 'iphonesimulator'
+#sdks = getsdk 'iphonesimulator'
 
 schemes.each do |m|
 	sdks.each do |n|
@@ -38,4 +46,8 @@ schemes.each do |m|
 		}
 	end
 end
+
+# 合并iphoneos和iphonesimulator的framework.
+lipo_framework=`sh ./builduniversal.sh`
+puts lipo_framework
 
